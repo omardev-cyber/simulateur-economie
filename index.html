@@ -1,0 +1,68 @@
+// Fichier : EconomicWeatherSim.tsx
+import React, { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+const API_KEY = "TA_CLE_API_OPENWEATHERMAP_ICI";
+
+const EconomicWeatherSim = () => {
+  const [city, setCity] = useState("");
+  const [weather, setWeather] = useState<any>(null);
+  const [policy, setPolicy] = useState("");
+
+  const fetchWeather = async () => {
+    if (!city) return;
+    const res = await fetch(
+      `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric&lang=fr`
+    );
+    const data = await res.json();
+    setWeather(data);
+    simulatePolicy(data);
+  };
+
+  const simulatePolicy = (data: any) => {
+    const temp = data.main.temp;
+    const condition = data.weather[0].main.toLowerCase();
+
+    let result = "";
+
+    if (condition.includes("rain") || condition.includes("snow")) {
+      result = "Relance budgétaire recommandée : hausse des dépenses publiques.";
+    } else if (temp > 30) {
+      result = "Politique monétaire restrictive : risque d’inflation lié à la chaleur.";
+    } else if (temp < 0) {
+      result = "Soutien énergétique accru et subventions temporaires.";
+    } else {
+      result = "Conditions stables : politique neutre maintenue.";
+    }
+
+    setPolicy(result);
+  };
+
+  return (
+    <div className="max-w-xl mx-auto mt-10 p-6 bg-white shadow-xl rounded-2xl space-y-4">
+      <h2 className="text-2xl font-bold">🌦️ Simulateur Politique Éco x Météo</h2>
+      <Input
+        placeholder="Entrer une ville (ex : Paris)"
+        value={city}
+        onChange={(e) => setCity(e.target.value)}
+      />
+      <Button onClick={fetchWeather}>Simuler</Button>
+
+      {weather && (
+        <Card>
+          <CardContent className="space-y-2 p-4">
+            <p>📍 Ville : {weather.name}</p>
+            <p>🌡️ Température : {weather.main.temp} °C</p>
+            <p>🌤️ Conditions : {weather.weather[0].description}</p>
+            <p className="font-semibold text-blue-700">📈 Politique suggérée : {policy}</p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+};
+
+export default EconomicWeatherSim;
+
