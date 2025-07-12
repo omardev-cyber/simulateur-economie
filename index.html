@@ -1,0 +1,123 @@
+// Fichier : EconomicWeatherSim.tsx
+import React, { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+const API_KEY = "TA_CLE_API_OPENWEATHERMAP_ICI";
+
+const EconomicWeatherSim = () => {
+  const [city, setCity] = useState("");
+  const [weather, setWeather] = useState<any>(null);
+  const [policy, setPolicy] = useState("");
+
+  const fetchWeather = async () => {
+    if (!city) return;
+    const res = await fetch(
+import React, { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+const API_KEY = "TA_CLE_API_OPENWEATHERMAP_ICI";
+
+const naturalDisasters = {
+  tropical: ["Cyclone", "Inondation", "Tempête tropicale"],
+  arid: ["Sécheresse", "Tempête de sable"],
+  temperate: ["Inondation", "Orage violent"],
+  cold: ["Blizzard", "Vague de froid"],
+};
+
+const classifyClimate = (lat: number, temp: number): string => {
+  if (temp > 28) return "tropical";
+  if (lat > 50 || temp < 5) return "cold";
+  if (temp >= 5 && temp <= 25) return "temperate";
+  return "arid";
+};
+
+const EconomicWeatherDisasterSim = () => {
+  const [city, setCity] = useState("");
+  const [weather, setWeather] = useState<any>(null);
+  const [disaster, setDisaster] = useState<string>("");
+  const [policy, setPolicy] = useState<string>("");
+
+  const fetchWeather = async () => {
+    if (!city) return;
+    const res = await fetch(
+      `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`
+    );
+    const data = await res.json();
+    setWeather(data);
+
+    const lat = data.coord.lat;
+    const temp = data.main.temp;
+    const climate = classifyClimate(lat, temp);
+
+    const disasters = naturalDisasters[climate];
+    const randomDisaster = disasters[Math.floor(Math.random() * disasters.length)];
+    setDisaster(randomDisaster);
+    simulatePolicy(randomDisaster);
+  };
+
+  const simulatePolicy = (event: string) => {
+    let response = "";
+    switch (event) {
+      case "Cyclone":
+        response = "Lancer un plan de reconstruction d'urgence + aides aux entreprises locales.";
+        break;
+      case "Inondation":
+        response = "Subventions aux agriculteurs, plan d'assainissement des infrastructures.";
+        break;
+      case "Tempête tropicale":
+        response = "Réparation des réseaux, aides au logement, relance par la consommation.";
+        break;
+      case "Sécheresse":
+        response = "Investissement dans les technologies d'irrigation et aides agricoles.";
+        break;
+      case "Tempête de sable":
+        response = "Soutien logistique et investissements en énergie renouvelable.";
+        break;
+      case "Orage violent":
+        response = "Réparation des dommages électriques, incitations à la résilience des entreprises.";
+        break;
+      case "Blizzard":
+        response = "Plan d'urgence énergétique et mesures de soutien aux ménages.";
+        break;
+      case "Vague de froid":
+        response = "Distribution d'aides chauffages, relance par le logement social.";
+        break;
+      default:
+        response = "Stabilité maintenue, aucune mesure urgente requise.";
+    }
+    setPolicy(response);
+  };
+
+  return (
+    <div className="max-w-2xl mx-auto mt-10 p-6 bg-white rounded-2xl shadow-lg space-y-4">
+      <h1 className="text-3xl font-bold">🌍 Simulateur de Politique Économique</h1>
+      <p className="text-gray-600">Entrez une ville. Vous serez nommé Ministre de l'Économie après une catastrophe naturelle.</p>
+      <Input
+        placeholder="Nom de votre ville (ex : Dakar)"
+        value={city}
+        onChange={(e) => setCity(e.target.value)}
+      />
+      <Button onClick={fetchWeather}>Démarrer la simulation</Button>
+
+      {weather && (
+        <Card>
+          <CardContent className="space-y-2 p-4">
+            <p><strong>Ville :</strong> {weather.name}</p>
+            <p><strong>Température :</strong> {weather.main.temp} °C</p>
+            <p><strong>Conditions météo :</strong> {weather.weather[0].description}</p>
+            <p className="text-red-600 font-semibold">🚨 Catastrophe : {disaster}</p>
+            <p className="text-green-700 font-semibold">🧑‍💼 En tant que Ministre de l'Économie, votre politique :<br />{policy}</p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+};
+
+export default EconomicWeatherDisasterSim;
+
+
