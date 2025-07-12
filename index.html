@@ -1,0 +1,96 @@
+import React, { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+const API_KEY = "TA_CLE_API_OPENWEATHERMAP_ICI";
+
+// Classification géographique fictive selon la ville
+const regionProfiles: Record<string, string> = {
+  sydney: "littoral",
+  paris: "urbaine",
+  cairo: "désertique",
+  moscow: "continentale",
+  miami: "tropicale",
+  tokyo: "sismique",
+};
+
+const disastersByRegion: Record<string, string[]> = {
+  littoral: ["Inondation côtière", "Tempête tropicale"],
+  urbaine: ["Panne d'infrastructure", "Inflation urbaine"],
+  désertique: ["Sécheresse sévère", "Tempête de sable"],
+  continentale: ["Vague de froid", "Effondrement énergétique"],
+  tropicale: ["Ouragan", "Crise logistique"],
+  sismique: ["Séisme majeur", "Tsunami localisé"],
+};
+
+const policySuggestions: Record<string, string> = {
+  "Inondation côtière": "Mettre en place un plan de reconstruction des logements, renforcer les digues et investir dans la résilience côtière.",
+  "Tempête tropicale": "Subventionner les PME affectées, rétablir les réseaux et lancer un plan de relance infrastructurel.",
+  "Panne d'infrastructure": "Lancer un plan Marshall numérique et physique, et créer des emplois publics temporaires.",
+  "Inflation urbaine": "Geler les loyers, augmenter les subventions publiques et baisser la TVA temporairement.",
+  "Sécheresse sévère": "Investir dans le dessalement et l'irrigation, distribuer des aides agricoles ciblées.",
+  "Tempête de sable": "Protéger les infrastructures et financer des technologies anti-poussière.",
+  "Vague de froid": "Aider les ménages vulnérables avec des primes énergie, subventionner le chauffage.",
+  "Effondrement énergétique": "Diversifier les sources d'énergie et imposer des économies contrôlées.",
+  "Ouragan": "Créer un fonds de catastrophe, aider à la reconstruction et renforcer les normes de construction.",
+  "Crise logistique": "Alléger les contraintes douanières et subventionner les chaînes d'approvisionnement locales.",
+  "Séisme majeur": "Mettre en place un programme de reconstruction rapide et de logement d'urgence.",
+  "Tsunami localisé": "Créer un plan d'évacuation, relancer le tourisme local et sécuriser les ports.",
+};
+
+const EconomicDisasterSim = () => {
+  const [city, setCity] = useState("");
+  const [weather, setWeather] = useState<any>(null);
+  const [region, setRegion] = useState<string>("");
+  const [disaster, setDisaster] = useState<string>("");
+  const [policy, setPolicy] = useState<string>("");
+
+  const fetchWeather = async () => {
+    if (!city) return;
+    const res = await fetch(
+      `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`
+    );
+    const data = await res.json();
+    setWeather(data);
+
+    const regionType = regionProfiles[city.toLowerCase()] || "urbaine";
+    setRegion(regionType);
+
+    const disasters = disastersByRegion[regionType];
+    const chosen = disasters[Math.floor(Math.random() * disasters.length)];
+    setDisaster(chosen);
+    setPolicy(policySuggestions[chosen]);
+  };
+
+  return (
+    <div className="max-w-2xl mx-auto mt-10 p-6 bg-white rounded-2xl shadow-lg space-y-4">
+      <h1 className="text-3xl font-bold">🌐 Simulateur de Crise Économique et Météo</h1>
+      <p className="text-gray-600">Tape ta ville pour devenir Ministre de l'Économie en cas de catastrophe naturelle locale.</p>
+      <Input
+        placeholder="Ex: Sydney, Paris, Cairo, Miami, Tokyo, etc."
+        value={city}
+        onChange={(e) => setCity(e.target.value)}
+      />
+      <Button onClick={fetchWeather}>Simuler</Button>
+
+      {weather && (
+        <Card>
+          <CardContent className="space-y-3 p-4">
+            <p><strong>Ville :</strong> {weather.name}</p>
+            <p><strong>Température :</strong> {weather.main.temp} °C</p>
+            <p><strong>Conditions météo :</strong> {weather.weather[0].description}</p>
+            <p><strong>Région géographique :</strong> {region}</p>
+            <p className="text-red-600 font-semibold">🚨 Catastrophe détectée : {disaster}</p>
+            <p className="text-blue-700 font-semibold">🧑‍💼 Ministre de l'Économie — stratégie proposée :</p>
+            <p className="text-green-700">{policy}</p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+};
+
+export default EconomicDisasterSim;
+
+
