@@ -1,0 +1,86 @@
+
+Envoyé de mon iPhone
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Simulateur de Politique Économique</title>
+  <style>
+    body { font-family: Arial; padding: 20px; max-width: 600px; margin: auto; }
+    input, button { padding: 10px; margin: 5px 0; width: 100%; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <h1>Simulateur de Politique Économique</h1>
+
+  <p>Entrez votre ville :</p>
+  <input type="text" id="ville" placeholder="Ex : Paris, Lyon, Dakar" />
+  <button onclick="lancerSimulation()">Lancer la simulation</button>
+
+  <div id="simulation" class="hidden">
+    <p id="meteo"></p>
+    <p id="evenement"></p>
+    <p>Quelle politique souhaitez-vous appliquer ?</p>
+    <button onclick="reagir('relance')">Politique de relance</button>
+    <button onclick="reagir('rigueur')">Politique de rigueur</button>
+    <p id="resultat"></p>
+  </div>
+
+  <script>
+    const evenements = [
+      "une canicule exceptionnelle",
+      "une inondation dévastatrice",
+      "une sécheresse prolongée",
+      "une tempête économique causée par le climat",
+      "un hiver anormalement doux qui nuit à l’agriculture"
+    ];
+
+    async function lancerSimulation() {
+      const ville = document.getElementById("ville").value.trim();
+      if (!ville) return alert("Merci d’entrer une ville.");
+
+      try {
+        // Étape 1 : géolocalisation de la ville (Open-Meteo)
+        const geo = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(ville)}&count=1`);
+        const geoData = await geo.json();
+
+        if (!geoData.results || geoData.results.length === 0) {
+          alert("Ville introuvable. Réessaie avec une autre.");
+          return;
+        }
+
+        const { latitude, longitude, name, country } = geoData.results[0];
+
+        // Étape 2 : météo réelle
+        const meteo = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
+        const meteoData = await meteo.json();
+        const temperature = meteoData.current_weather.temperature;
+
+        // Étape 3 : événement climatique aléatoire
+        const evenement = evenements[Math.floor(Math.random() * evenements.length)];
+
+        // Affichage
+        document.getElementById("meteo").textContent = `À ${name} (${country}), il fait actuellement ${temperature}°C.`;
+        document.getElementById("evenement").textContent = `Un événement inattendu survient : ${evenement}.`;
+        document.getElementById("simulation").classList.remove("hidden");
+        document.getElementById("resultat").textContent = "";
+
+      } catch (err) {
+        alert("Erreur lors du chargement des données météo.");
+        console.error(err);
+      }
+    }
+
+    function reagir(choix) {
+      let resultat = "";
+      if (choix === "relance") {
+        resultat = "Votre plan de relance stimule l'économie à court terme, mais fait augmenter la dette publique.";
+      } else {
+        resultat = "Votre politique de rigueur réduit les déficits, mais provoque une hausse du chômage.";
+      }
+      document.getElementById("resultat").textContent = resultat;
+    }
+  </script>
+</body>
+</html>
